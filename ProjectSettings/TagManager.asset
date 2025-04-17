@@ -8,6 +8,8 @@ TagManager:
   - CinemachineTarget
   - ScreenCamera
   - cockpit_capitalLaser
+  - Zombie
+  - Arrow
   layers:
   - Default
   - TransparentFX
@@ -24,8 +26,8 @@ TagManager:
   - MainCameraOnly
   - 
   - 
-  - 
-  - 
+  - Bow
+  - Arrow
   - 
   - 
   - 
