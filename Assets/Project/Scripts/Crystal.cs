@@ -17,7 +17,7 @@ public class Crystal : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        
+        Debug.Log("水晶血量" + currentHealth);
         if (damageEffect != null)
         {
             Instantiate(damageEffect, transform.position, Quaternion.identity);

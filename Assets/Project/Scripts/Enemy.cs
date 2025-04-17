@@ -3,50 +3,50 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 控制敌人的行为：路径点跟随，水晶攻击，死亡掉落金币
+/// </summary>
+
 public class Enemy : MonoBehaviour
 {
     [Header("基本属性")] 
-    [SerializeField] private float maxHealth = 100f;
-    [SerializeField] private int reward = 10; // 击杀奖励
-    [SerializeField] private float moveSpeed = 0.5f;
-    [SerializeField] private float rotationSpeed = 1f;
+    [SerializeField] private float maxHealth = 100f;      // 最大生命值
+    [SerializeField] private int reward = 10;             // 击杀奖励金币数量
+    [SerializeField] private float moveSpeed = 0.8f;      // 移动速度
+    [SerializeField] private float rotationSpeed = 1f;    // 旋转速度
 
     [Header("战斗属性")] 
-    [SerializeField] private float attackRange = 1.5f;
-    [SerializeField] private float attackRate = 1f;
-    [SerializeField] private int attackDamage = 10;
-    [SerializeField] private float playerDetectionRange = 5f;
+    [SerializeField] private float attackRange = 1.5f;    // 攻击范围
+    [SerializeField] private float attackRate = 1f;       // 攻击频率
+    [SerializeField] private int attackDamage = 10;       // 攻击伤害
     
-    [Header("效果")] 
-    [SerializeField] private Material hitMaterial;
-    [SerializeField] private float hitEffectDuration = 0.2f;
-    [SerializeField] private GameObject deathEffect;
-    [SerializeField] private GameObject attackEffect;
-
-    [Header("音效")]
-    [SerializeField] private AudioClip attackSound;
-    [SerializeField] private AudioClip deathSound;
-    [SerializeField] private AudioClip hurtSound;
+    [Header("掉落设置")]
+    [SerializeField] private GameObject coinPrefab;       // 金币预制体
+    [SerializeField] private int minCoins = 1;            // 最少掉落金币数
+    [SerializeField] private int maxCoins = 3;            // 最多掉落金币数
+    [SerializeField] private float dropRadius = 1f;       // 掉落半径
     
+    private float currentHealth;                          // 当前生命值
+    private Transform targetWaypoint;                     // 当前目标路径点
+    private int waypointIndex = 0;                        // 当前路径点索引
+    private Rigidbody rb;                                 // 刚体组件
+    private Renderer enemyRenderer;                       // 渲染器组件
+    private Material originalMaterial;                    // 原始材质
+    private bool isDead = false;                          // 是否已死亡
+    private Animator anim;                                // 动画控制器
     
-    private float currentHealth;
-    private Transform targetWaypoint;
-    private int waypointIndex = 0;
-    private Rigidbody rb;
-    private Renderer enemyRenderer;
-    private Material originalMaterial;
-    private bool isDead = false;
-    private Animator anim;
-    
-    private Transform currentTarget;
-    private float nextAttackTime;
-    private bool isAttacking = false;
+    private Transform crystalTarget;                      // 水晶目标
+    private float nextAttackTime = 0f;                         // 下次攻击时间
+    private bool isAttacking = false;                     // 是否正在攻击
     
     //属性访问器
     public bool IsDead => isDead;
     public int Reward => reward;
     public float MoveSpeed => moveSpeed;
 
+    /// <summary>
+    /// 初始化组件引用
+    /// </summary>
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -58,32 +58,37 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 初始化状态和目标
+    /// </summary>
     private void Start()
     {
         currentHealth = maxHealth;
         targetWaypoint = WaypointManager.Instance.GetWaypoint(waypointIndex);
         waypointIndex = 0;
     }
-
+    
+    /// <summary>
+    /// 每帧更新敌人行为
+    /// </summary>
     private void Update()
     {
         if (isDead) return;
 
-        // 检查是否有可攻击的目标
-        CheckForTargets();
-        
-        if (currentTarget != null)
+        if (crystalTarget != null)
         {
-            AttackBehavior();
+            AttackCrystal();
         }
         else
         {
             MovementBehavior();
         }
-        
-        UpdateAnimator();
     }
 
+    
+    /// <summary>
+    /// 沿路径点移动的行为
+    /// </summary>
     private void MovementBehavior()
     {
         if (targetWaypoint == null) return;
@@ -100,8 +105,6 @@ public class Enemy : MonoBehaviour
         }
         
         // 移动
-        // rb.velocity = transform.forward * moveSpeed;
-        // transform.position += transform.forward * (moveSpeed * Time.deltaTime);
         transform.Translate(Vector3.forward * (moveSpeed * Time.deltaTime));
 
         // 检查是否到达路径点
@@ -111,6 +114,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 获取下一个路径点，如果没有则寻找水晶
+    /// </summary>
     private void GetNextWaypoint()
     {
         waypointIndex++;
@@ -120,44 +126,23 @@ public class Enemy : MonoBehaviour
         if (targetWaypoint == null)
         {
             // 没有更多路径点，寻找水晶
-            GameObject crystal = GameObject.FindGameObjectWithTag("Crystal");
+            GameObject crystal = GameObject.FindGameObjectWithTag("Tower");
             if (crystal != null)
             {
-                currentTarget = crystal.transform;
-            }
-        }
-    }
-    
-    private void CheckForTargets()
-    {
-        // 优先攻击玩家
-        if (currentTarget == null || currentTarget.CompareTag("Player"))
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null && Vector3.Distance(transform.position, player.transform.position) <= playerDetectionRange)
-            {
-                currentTarget = player.transform;
-                return;
-            }
-        }
-        
-        // 如果没有玩家目标，检查是否到达水晶
-        if (targetWaypoint == null && currentTarget == null)
-        {
-            GameObject crystal = GameObject.FindGameObjectWithTag("Crystal");
-            if (crystal != null)
-            {
-                currentTarget = crystal.transform;
+                crystalTarget = crystal.transform;
             }
         }
     }
 
-    private void AttackBehavior()
+    /// <summary>
+    /// 攻击水晶的行为
+    /// </summary>
+    private void AttackCrystal()
     {
-        if (currentTarget == null) return;
+        if (crystalTarget == null) return;
         
         // 面向目标
-        Vector3 direction = (currentTarget.position - transform.position).normalized;
+        Vector3 direction = (crystalTarget.position - transform.position).normalized;
         direction.y = 0;
         
         if (direction != Vector3.zero)
@@ -168,27 +153,38 @@ public class Enemy : MonoBehaviour
         
         // 停止移动
         rb.velocity = Vector3.zero;
+
+        //按攻击频率进行攻击
+        if (Time.time >= nextAttackTime)
+        {
+            AttackTarget();
+            nextAttackTime = Time.time + 1f / attackRate;
+        }
         
+        /*
         // 检查是否在攻击范围内
-        float distance = Vector3.Distance(transform.position, currentTarget.position);
+        float distance = Vector3.Distance(transform.position, crystalTarget.position);
         if (distance <= attackRange)
         {
             if (Time.time >= nextAttackTime)
             {
-                Attack();
+                AttackTarget();
                 nextAttackTime = Time.time + 1f / attackRate;
             }
         }
         else
         {
             // 不在攻击范围内，向目标移动
-            //rb.velocity = transform.forward * moveSpeed;
             transform.Translate(Vector3.forward * (moveSpeed * Time.deltaTime));
             isAttacking = false;
         }
+        */
     }
     
-    private void Attack()
+    /// <summary>
+    /// 执行攻击目标的动作
+    /// </summary>
+    private void AttackTarget()
     {
         isAttacking = true;
         
@@ -198,47 +194,27 @@ public class Enemy : MonoBehaviour
             anim.SetBool("IsAttacking", isAttacking);
         }
         
-        // 攻击效果
-        if (attackEffect != null)
+        // 对水晶造成伤害
+        if (crystalTarget != null && crystalTarget.CompareTag("Tower"))
         {
-            Instantiate(attackEffect, transform.position + Vector3.up, Quaternion.identity);
-        }
-        
-        // 对目标造成伤害
-        if (currentTarget.CompareTag("Player"))
-        {
-            Player player = currentTarget.GetComponent<Player>();
-            if (player != null)
-            {
-                player.TakeDamage(attackDamage);
-            }
-        }
-        else if (currentTarget.CompareTag("Crystal"))
-        {
-            Crystal crystal = currentTarget.GetComponent<Crystal>();
+            Crystal crystal = crystalTarget.GetComponent<Crystal>();
             if (crystal != null)
             {
                 crystal.TakeDamage(attackDamage);
             }
         }
     }
-    
-    private void UpdateAnimator()
-    {
-        if (anim == null) return;
-        
-        anim.SetBool("IsMoving", rb.velocity.magnitude > 0.1f && !isAttacking);
-        anim.SetBool("IsAttacking", isAttacking);
-    }
-    
+
+    /// <summary>
+    /// 受到伤害的处理
+    /// </summary>
+    /// <param name="damage">伤害值</param>
     public void TakeDamage(float damage)
     {
         if (isDead) return;
 
         currentHealth -= damage;
-        
-        // 受伤效果
-        StartCoroutine(HitEffect());
+        Debug.Log(currentHealth);
         
         // 检查死亡
         if (currentHealth <= 0)
@@ -247,28 +223,19 @@ public class Enemy : MonoBehaviour
             Die();
         }
     }
-    private IEnumerator HitEffect()
-    {
-        if (enemyRenderer != null && hitMaterial != null)
-        {
-            enemyRenderer.material = hitMaterial;
-            yield return new WaitForSeconds(hitEffectDuration);
-            enemyRenderer.material = originalMaterial;
-        }
-    }
     
+    /// <summary>
+    /// 敌人死亡处理
+    /// </summary>
     private void Die()
     {
         isDead = true;
         
-        // 死亡效果
-        if (deathEffect != null)
-        {
-            Instantiate(deathEffect, transform.position, Quaternion.identity);
-        }
-        
-        // 奖励玩家
+        // 奖励玩家金币
         GameManager.Instance.AddCurrency(reward);
+        
+        // 掉落金币物品
+        DropCoins();
         
         // 禁用碰撞器和渲染器
         if (TryGetComponent<Collider>(out var collider))
@@ -290,10 +257,41 @@ public class Enemy : MonoBehaviour
             anim.SetTrigger("Die");
         }
         
-        // 销毁对象（可以替换为对象池回收）
+        // 销毁对象
         Destroy(gameObject, 2f);
     }
-    
+
+    /// <summary>
+    /// 掉落金币物品
+    /// </summary>
+    private void DropCoins()
+    {
+        if (coinPrefab == null) return;
+
+        // 随机确定掉落的金币数量
+        int coinCount = UnityEngine.Random.Range(minCoins, maxCoins + 1);
+
+        for (int i = 0; i < coinCount; i++)
+        {
+            // 在敌人周围随机位置生成金币
+            Vector2 randomCircle = UnityEngine.Random.insideUnitCircle * dropRadius;
+            Vector3 randomPosition = transform.position + new Vector3(randomCircle.x, 0.1f, randomCircle.y);
+
+            // 实例化金币对象
+            GameObject coin = Instantiate(coinPrefab, randomPosition, Quaternion.identity);
+
+            // 可以给金币添加一些随机的物理效果，比如弹跳效果
+            if (coin.TryGetComponent<Rigidbody>(out var coinRb))
+            {
+                coinRb.AddForce(new Vector3(
+                    UnityEngine.Random.Range(-1f, 1f),
+                    UnityEngine.Random.Range(2f, 4f),
+                    UnityEngine.Random.Range(-1f, 1f)
+                ) * 1.5f, ForceMode.Impulse);
+            }
+        }
+    }
+
     // 用于调试的Gizmos
     private void OnDrawGizmos()
     {
@@ -301,26 +299,6 @@ public class Enemy : MonoBehaviour
         {
             Gizmos.color = Color.red;
             Gizmos.DrawLine(transform.position, targetWaypoint.position);
-        }
-    }
-
-    // 修改移动速度的方法
-    public void ModifyMoveSpeed(float speedModifier, float duration)
-    {
-        StartCoroutine(TempModifySpeed(speedModifier, duration));
-    }
-    
-    // 临时修改速度的协程
-    private IEnumerator TempModifySpeed(float speedModifier, float duration)
-    {
-        float originalSpeed = moveSpeed;
-        moveSpeed *= speedModifier;
-        
-        yield return new WaitForSeconds(duration);
-        
-        if (!isDead)
-        {
-            moveSpeed = originalSpeed;
         }
     }
 }

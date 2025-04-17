@@ -6,7 +6,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 public abstract class Weapon : MonoBehaviour
 {
     [Header("基础武器属性")]
-    [SerializeField] protected int baseDamage = 20;
+    [SerializeField] protected int baseDamage = 10;
     [SerializeField] protected float attackCooldown = 0.3f;
     
     [Header("基础效果")]
@@ -34,8 +34,10 @@ public abstract class Weapon : MonoBehaviour
         {
             interactable.selectEntered.AddListener(OnGrab);
             interactable.selectExited.AddListener(OnRelease);
+            interactable.activated.AddListener(SpecialEvent);
         }
     }
+
     
     protected virtual void OnGrab(SelectEnterEventArgs args)
     {
@@ -45,6 +47,11 @@ public abstract class Weapon : MonoBehaviour
     protected virtual void OnRelease(SelectExitEventArgs args)
     {
         isHeld = false;
+    }
+    
+    protected virtual void SpecialEvent(ActivateEventArgs arg0)
+    {
+        //事件，eg：扣动扳机
     }
     
     protected virtual void PlayHitSound()

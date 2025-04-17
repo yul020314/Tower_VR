@@ -10,6 +10,8 @@ TagManager:
   - cockpit_capitalLaser
   - Zombie
   - Arrow
+  - Enemy
+  - Tower
   layers:
   - Default
   - TransparentFX
