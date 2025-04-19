@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8254140774665030123}
   - component: {fileID: 3059502933607929378}
   - component: {fileID: 5109070284119617847}
+  - component: {fileID: 265849966434636916}
   m_Layer: 0
   m_Name: crossbow_bolt
   m_TagString: Untagged
@@ -153,3 +154,15 @@ MonoBehaviour:
   lifeTime: 10
   hitEffect: {fileID: 0}
   hitSound: {fileID: 0}
+--- !u!114 &265849966434636916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 109893070415124295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d1e14ba0263b9841a819caa2b6caafa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

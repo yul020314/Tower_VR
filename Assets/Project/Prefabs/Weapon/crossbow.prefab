@@ -83,6 +83,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3215536881658733001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 956317062385384978}
+  m_Layer: 0
+  m_Name: secondaryAttachTransform
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &956317062385384978
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3215536881658733001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: -0.02, z: 0.308}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5603224350729182759}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3646034273807227746
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,7 +155,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5412736638467863641}
   m_Layer: 0
-  m_Name: attachTransform
+  m_Name: leftHandAttachTransform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -228,6 +259,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &5136830808466286916
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7743312324223394278}
+  m_Layer: 0
+  m_Name: rightHandAttachTransform
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7743312324223394278
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5136830808466286916}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.04, z: 0.08}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5603224350729182759}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6584068841037412997
 GameObject:
   m_ObjectHideFlags: 0
@@ -327,6 +389,7 @@ GameObject:
   - component: {fileID: 8530953254617305474}
   - component: {fileID: 6861840382270714509}
   - component: {fileID: 889825213285558809}
+  - component: {fileID: -8257118065896331746}
   m_Layer: 0
   m_Name: crossbow
   m_TagString: Untagged
@@ -352,6 +415,8 @@ Transform:
   - {fileID: 8258961622007927790}
   - {fileID: 777829640075209387}
   - {fileID: 5412736638467863641}
+  - {fileID: 7743312324223394278}
+  - {fileID: 956317062385384978}
   - {fileID: 7326894471895308259}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -470,8 +535,8 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 1
-  m_Interpolate: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!114 &6861840382270714509
@@ -576,8 +641,8 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
-  m_AttachTransform: {fileID: 5412736638467863641}
-  m_SecondaryAttachTransform: {fileID: 0}
+  m_AttachTransform: {fileID: 7743312324223394278}
+  m_SecondaryAttachTransform: {fileID: 956317062385384978}
   m_UseDynamicAttach: 0
   m_MatchAttachPosition: 1
   m_MatchAttachRotation: 1
@@ -643,6 +708,8 @@ MonoBehaviour:
   hitEffect: {fileID: 0}
   hitSound: {fileID: 0}
   useSound: {fileID: 0}
+  leftHandAttachTransform: {fileID: 0}
+  rightHandAttachTransform: {fileID: 0}
   arrowPrefab: {fileID: 109893070415124295, guid: af746b2b5234ab74287285ba929c1c26, type: 3}
   arrowSpawnPoint: {fileID: 7326894471895308259}
   arrowSpeed: 30
@@ -651,6 +718,18 @@ MonoBehaviour:
   maxRange: 50
   reloadSound: {fileID: 0}
   fireSound: {fileID: 0}
+--- !u!114 &-8257118065896331746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6775033842288868892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d1e14ba0263b9841a819caa2b6caafa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8594366349588188742
 GameObject:
   m_ObjectHideFlags: 0

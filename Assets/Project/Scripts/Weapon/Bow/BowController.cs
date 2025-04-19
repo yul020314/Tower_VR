@@ -7,16 +7,17 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class BowController : MonoBehaviour
 {
-    [SerializeField] 
-    private BowString bowStringRenderer;
+    [SerializeField] private BowString bowStringRenderer;
+    
+    [SerializeField] private XRGrabInteractable grabbable,interactable;
 
-    private XRGrabInteractable interactable;
+    [SerializeField] private Transform midPointGrabObject, midPointVisualObject, midPointParent;
 
-    [SerializeField] 
-    private Transform midPointGrabObject, midPointVisualObject, midPointParent;
-
-    [SerializeField] 
-    private float bowStringStretchLimit = 0.25f;
+    [SerializeField] private float bowStringStretchLimit = 0.25f;
+    
+    [Header("左右手抓取设置")]
+    [SerializeField] private Transform leftHandAttachTransform;
+    [SerializeField] private Transform rightHandAttachTransform;
     
     private Transform interactor;
 
@@ -27,15 +28,31 @@ public class BowController : MonoBehaviour
 
     private void Awake()
     {
+        leftHandAttachTransform = transform.Find("leftHandAttachTransform");
+        rightHandAttachTransform = transform.Find("rightHandAttachTransform");
+        grabbable = GetComponent<XRGrabInteractable>();
         interactable = midPointGrabObject.GetComponent<XRGrabInteractable>();
     }
 
     private void Start()
     {
+        grabbable.selectEntered.AddListener(OnGrab);
         interactable.selectEntered.AddListener(PreparBowString);
         interactable.selectExited.AddListener(ResetBowString);
     }
-    
+
+    private void OnGrab(SelectEnterEventArgs arg0)
+    {
+        interactor = arg0.interactorObject.transform; 
+        if (interactor.name.ToLower().Contains("left"))
+        {
+            grabbable.attachTransform = leftHandAttachTransform;
+        }
+        else if (interactor.name.ToLower().Contains("right"))
+        {
+            grabbable.attachTransform = rightHandAttachTransform;
+        }
+    }
     private void PreparBowString(SelectEnterEventArgs arg0)
     {
         interactor = arg0.interactableObject.transform;

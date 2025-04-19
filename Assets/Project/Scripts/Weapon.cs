@@ -14,6 +14,10 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] protected AudioClip hitSound;
     [SerializeField] protected AudioClip useSound;
     
+    [Header("左右手抓取设置")]
+    [SerializeField] private Transform leftHandAttachTransform;
+    [SerializeField] private Transform rightHandAttachTransform;
+
     protected AudioSource audioSource;
     protected XRGrabInteractable interactable;
     protected bool isHeld = false;
@@ -23,7 +27,9 @@ public abstract class Weapon : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
         interactable = GetComponent<XRGrabInteractable>();
-        
+        leftHandAttachTransform = transform.Find("leftHandAttachTransform");
+        rightHandAttachTransform = transform.Find("rightHandAttachTransform");
+
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -42,8 +48,18 @@ public abstract class Weapon : MonoBehaviour
     protected virtual void OnGrab(SelectEnterEventArgs args)
     {
         isHeld = true;
+        
+        Transform interactor = args.interactorObject.transform; 
+        if (interactor.name.ToLower().Contains("left"))
+        {
+            interactable.attachTransform = leftHandAttachTransform;
+        }
+        else if (interactor.name.ToLower().Contains("right"))
+        {
+            interactable.attachTransform = rightHandAttachTransform;
+        }
     }
-    
+
     protected virtual void OnRelease(SelectExitEventArgs args)
     {
         isHeld = false;
